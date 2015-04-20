@@ -25,10 +25,7 @@ Text Domain: page-links-to-slim
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-// Pull in WP Stack plugin library
-include( dirname( __FILE__ ) . '/lib/wp-stack-plugin.php' );
-
-class CWS_PageLinksTo extends WP_Stack_Plugin {
+class CWS_PageLinksTo {
 	static $instance;
 	const LINKS_CACHE_KEY = 'plt_cache__links';
 	const TARGETS_CACHE_KEY = 'plt_cache__targets';
@@ -41,7 +38,7 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 
 	function __construct() {
 		self::$instance = $this;
-		$this->hook( 'init' );
+		add_action( 'init', array( $this, 'init' ) );
 	}
 
 	/**
@@ -59,26 +56,24 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 	function register_hooks() {
 
 		// Hook in to URL generation
-		$this->hook( 'page_link', 'link', 20 );
-		$this->hook( 'post_link', 'link', 20 );
-		$this->hook( 'post_type_link', 'link', 20 );
-		$this->hook( 'attachment_link', 'link', 20 );
+		add_action( 'page_link', array( $this, 'link' ), 20 );
+		add_action( 'post_link', array( $this, 'link' ), 20 );
+		add_action( 'post_type_link', array( $this, 'link' ), 20 );
+		add_action( 'attachment_link', array( $this, 'link' ), 20 );
 
 		// Non-standard priority hooks
-		$this->hook( 'do_meta_boxes', 20 );
-		$this->hook( 'wp_footer', 19 );
-		$this->hook( 'wp_enqueue_scripts', 'start_buffer', - 9999 );
-		$this->hook( 'wp_head', 'end_buffer', 9999 );
+		add_action( 'do_meta_boxes', array( $this, 'do_meta_boxes' ), 20 );
+		add_action( 'wp_footer', array( $this, 'wp_footer' ), 19 );
 
 		// Non-standard callback hooks
-		$this->hook( 'load-post.php', 'load_post' );
+		add_action( 'load-post.php', array( $this, 'load_post' ) );
 
 		// Standard hooks
-		$this->hook( 'wp_list_pages' );
-		$this->hook( 'template_redirect' );
-		$this->hook( 'save_post' );
-		$this->hook( 'edit_attachment' );
-		$this->hook( 'wp_nav_menu_objects' );
+		add_action( 'wp_list_pages', array( $this, 'wp_list_pages' ) );
+		add_action( 'template_redirect', array( $this, 'template_redirect' ) );
+		add_action( 'save_post', array( $this, 'save_post' ) );
+		add_action( 'edit_attachment', array( $this, 'edit_attachment' ) );
+		add_action( 'wp_nav_menu_objects', array( $this, 'wp_nav_menu_objects' ) );
 
 		// Metadata validation grants users editing privileges for our custom fields
 		register_meta( 'post', self::LINK_META_KEY, null, '__return_true' );
@@ -550,7 +545,7 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 	function load_post() {
 		if ( isset( $_GET['post'] ) ) {
 			if ( $this->get_link( (int) $_GET['post'] ) ) {
-				$this->hook( 'admin_notices', 'notify_of_external_link' );
+				add_action( 'admin_notices', array( $this, 'notify_of_external_link' ) );
 			}
 		}
 	}
