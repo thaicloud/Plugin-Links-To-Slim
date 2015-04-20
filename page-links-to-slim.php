@@ -3,7 +3,7 @@
 Plugin Name: Page Links To Slim
 Plugin URI: http://txfx.net/wordpress-plugins/page-links-to/
 Description: Forked from Mark Jaquith's "Page Links To" plugin, version 2.9.6. Allows you to point WordPress pages or posts to a URL of your choosing.
-Version: 1.0.0
+Version: 1.0.1
 Author: Mark Jaquith, knowmike
 Text Domain: page-links-to-slim
 */
