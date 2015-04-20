@@ -194,9 +194,9 @@ class CWS_PageLinksTo {
 
 		if ( in_array( $page, $plt_post_types ) && 'advanced' === $context ) {
 			add_meta_box( 'page-links-to', _x( 'Page Links To', 'Meta box title', 'page-links-to' ), array(
-					$this,
-					'meta_box'
-				), $page, 'advanced', 'low' );
+				$this,
+				'meta_box'
+			), $page, 'advanced', 'low' );
 		}
 	}
 
