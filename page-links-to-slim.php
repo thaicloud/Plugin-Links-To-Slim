@@ -1,13 +1,12 @@
 <?php
 /*
-Plugin Name: Page Links To
+Plugin Name: Page Links To Slim
 Plugin URI: http://txfx.net/wordpress-plugins/page-links-to/
-Description: Allows you to point WordPress pages or posts to a URL of your choosing.  Good for setting up navigational links to non-WP sections of your site or to off-site resources.
-Version: 2.9.6
-Author: Mark Jaquith
+Description: Forked from Mark Jaquith's "Page Links To" plugin, version 2.9.6. Allows you to point WordPress pages or posts to a URL of your choosing.
+Version: 1.0.0
+Author: Mark Jaquith, knowmike
 Author URI: http://coveredwebservices.com/
-Text Domain: page-links-to
-Domain Path: /languages
+Text Domain: page-links-to-slim
 */
 
 /*  Copyright 2005-2013  Mark Jaquith
@@ -52,9 +51,6 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 	function init() {
 		// Check to see if any of our data needs to be upgraded
 		$this->maybe_upgrade();
-
-		// Load translation files
-		load_plugin_textdomain( 'page-links-to', false, basename( dirname( self::FILE ) ) . '/languages' );
 
 		// Register hooks
 		$this->register_hooks();
@@ -601,22 +597,6 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 		}
 	}
 
-	/**
-	 * Adds a GitHub link to the plugin meta
-	 *
-	 * @param array $links the current array of links
-	 * @param string $file the current plugin being processed
-	 * @return array the modified array of links
-	 */
-	function plugin_row_meta( $links, $file ) {
-		if ( $file === plugin_basename( self::FILE ) ) {
-			return array_merge(
-				$links,
-				array( '<a href="https://github.com/markjaquith/page-links-to" target="_blank">GitHub</a>' )
-			);
-		}
-		return $links;
-	}
 }
 
 // Bootstrap everything
