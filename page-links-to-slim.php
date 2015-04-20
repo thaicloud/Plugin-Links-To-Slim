@@ -81,7 +81,6 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 		$this->hook( 'save_post'           );
 		$this->hook( 'edit_attachment'     );
 		$this->hook( 'wp_nav_menu_objects' );
-		$this->hook( 'plugin_row_meta'     );
 
 		// Metadata validation grants users editing privileges for our custom fields
 		register_meta('post', self::LINK_META_KEY, null, '__return_true');
@@ -265,7 +264,7 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 		<p><?php _e( 'Point this content to:', 'page-links-to' ); ?></p>
 		<p><label><input type="radio" id="cws-links-to-choose-wp" name="cws_links_to_choice" value="wp" <?php checked( !$linked ); ?> /> <?php _e( 'Its normal WordPress URL', 'page-links-to' ); ?></label></p>
 		<p><label><input type="radio" id="cws-links-to-choose-custom" name="cws_links_to_choice" value="custom" <?php checked( $linked ); ?> /> <?php _e( 'A custom URL', 'page-links-to' ); ?></label></p>
-		<div style="webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;margin-left: 30px;" id="cws-links-to-custom-section" class="<?php echo ! $linked ? 'hide-if-js' : ''; ?>">
+		<div style="webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box;margin-left: 30px;" id="cws-links-to-custom-section" >
 			<p><input name="cws_links_to" type="text" style="width:75%" id="cws-links-to" value="<?php echo esc_attr( $url ); ?>" /></p>
 			<p><label for="cws-links-to-new-tab"><input type="checkbox" name="cws_links_to_new_tab" id="cws-links-to-new-tab" value="_blank" <?php checked( (bool) $this->get_target( $post->ID ) ); ?>> <?php _e( 'Open this link in a new tab', 'page-links-to' ); ?></label></p>
 		</div>
@@ -422,7 +421,7 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 	function log_target( $post ) {
 		$post = get_post( $post );
 		$this->targets_on_this_page[$post->ID] = true;
-		$this->hook( 'wp_footer', 'targets_in_new_window_via_js_footer', 999 );
+		$this->targets_in_new_window_via_js();
 	}
 
 	/**
@@ -439,8 +438,9 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 
 		if ( $meta_link ) {
 			$link = esc_url( $meta_link );
-			if ( $this->get_target( $post->ID ) )
+			if ( $this->get_target( $post->ID ) ){
 				$this->log_target( $post->ID );
+			}
 		}
 
 		return $link;
@@ -567,23 +567,10 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 	}
 
 	/**
-	 * Return a JS file as a string
-	 *
-	 * Takes a plugin-relative path to a CS-produced JS file
-	 * and returns its second line (no CS comment line)
-	 * @param  string $path plugin-relative path to CoffeeScript-produced JS file
-	 * @return string       the JS string
-	 */
-	function inline_coffeescript( $path ) {
-			$inline_script = file_get_contents( trailingslashit( plugin_dir_path( self::FILE ) ) . $path );
-			$inline_script = explode( "\n", $inline_script );
-			return $inline_script[1];
-	}
-
-	/**
 	 * Adds inline JS to the footer to handle "open in new tab" links
 	 */
-	function targets_in_new_window_via_js_footer() {
+	function targets_in_new_window_via_js() {
+
 		$target_ids = $this->targets_on_this_page;
 		$target_urls = array();
 		foreach ( array_keys( $target_ids ) as $id ) {
@@ -593,7 +580,11 @@ class CWS_PageLinksTo extends WP_Stack_Plugin {
 		}
 		$targets = array_keys( $target_urls );
 		if ( $targets ) {
-			?><script>var pltNewTabURLs = <?php echo json_encode( $targets ) . ';' . $this->inline_coffeescript( 'js/new-tab.js' ); ?></script><?php
+			if ( ! is_admin() ) {
+				wp_register_script( 'new-tab', plugin_dir_url( __FILE__ ) . "/js/new-tab.js", array( 'jquery' ) );
+				wp_localize_script( 'new-tab', 'targets', $targets );
+				wp_enqueue_script( 'new-tab' );
+			}
 		}
 	}
 
